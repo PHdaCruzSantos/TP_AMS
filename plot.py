@@ -57,6 +57,37 @@ def plotar_grafo_partido(grafo, deputados_partidos, partido_selecionado):
     plt.title(f"Grafo do Partido: {partido_selecionado}")
     plt.show()
 
+def plotar_grafo_comparacao(grafo, deputados_partidos, partido1, partido2):
+    subgrafo = nx.Graph()
+    cores = {}
+    
+    for node in grafo.nodes:
+        if deputados_partidos[node] in [partido1, partido2]:
+            subgrafo.add_node(node)
+            cores[node] = 'red' if deputados_partidos[node] == partido1 else 'blue'
+            for neighbor in grafo.neighbors(node):
+                if deputados_partidos[neighbor] in [partido1, partido2]:
+                    subgrafo.add_edge(node, neighbor, weight=grafo[node][neighbor]['weight'])
+    
+    pos = nx.spring_layout(subgrafo, k=0.15, iterations=20)  # Ajustar layout para melhor visualização
+    plt.figure(figsize=(14, 14))
+    edges = subgrafo.edges(data=True)
+    
+    # Desenhar nós e arestas
+    node_colors = [cores[node] for node in subgrafo.nodes]
+    nx.draw_networkx_nodes(subgrafo, pos, node_size=500, node_color=node_colors)
+    nx.draw_networkx_edges(subgrafo, pos, edgelist=edges, width=0.5, edge_color='gray')
+
+    # Adicionar etiquetas aos nós
+    nx.draw_networkx_labels(subgrafo, pos, font_size=10, font_family='sans-serif')
+
+    # Adicionar pesos das arestas como etiquetas
+    edge_labels = {(u, v): d['weight'] for u, v, d in edges}
+    nx.draw_networkx_edge_labels(subgrafo, pos, edge_labels=edge_labels, font_size=8)
+    
+    plt.title(f"Comparação entre {partido1} e {partido2}")
+    plt.show()
+
 def main_plot():
     # Carrega o grafo e os partidos
     grafo, deputados_partidos = carregar_grafo("grafo_arq.txt", "deputados_partidos.txt")
